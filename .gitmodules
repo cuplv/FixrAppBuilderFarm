@@ -1,0 +1,3 @@
+[submodule "FixrAppBuilder"]
+	path = FixrAppBuilder
+	url = https://github.com/cuplv/FixrAppBuilder.git
