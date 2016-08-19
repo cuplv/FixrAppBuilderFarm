@@ -31,7 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    # 'buildquery.apps.BuildqueryConfig',
+    'query.apps.QueryConfig',
+    'build.apps.BuildConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
