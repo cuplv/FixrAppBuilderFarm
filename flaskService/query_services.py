@@ -8,15 +8,14 @@ from mongoDB.query import get_repo_data, get_top_N_buildable_repo_data, get_repo
 from mongoDB.config import DEFAULT_DB_CONFIG
 
 from os import path
-from config import get_configs, default_configs, DEFAULT_QSERVE_CONFIG
+from config import get_configs, default_configs, load_configs, DEFAULT_QSERVE_CONFIG
+
+from build_logging import setup_logging
 
 app = Flask(__name__)
 
 ini_file_path = 'app_builder.ini'
-if path.exists(ini_file_path):
-   CONFIGS = get_configs(ini_file_path)
-else:
-   CONFIGS = default_configs()
+CONFIGS = load_configs( ini_file_path )
 
 @app.route("/repo/")
 def query_repo():
@@ -47,5 +46,6 @@ def query_ids():
 
 
 if __name__ == "__main__":
+    setup_logging( CONFIGS, process_name = CONFIGS['qserve']['name'] )
     app.run(host=CONFIGS['qserve']['host'], port=CONFIGS['qserve']['port'])
 

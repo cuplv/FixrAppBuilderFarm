@@ -47,29 +47,27 @@ def gen_random_repo_records(size_range=[4,30]):
     for n in range(0,size):
         hash_id = "%032x" % getrandbits(128)
         app_recs = gen_random_app_records()
+        build_recs = gen_random_build_records()
         store_loc = 0
-        repo_rec = new_repo_record(user_name, repo_name, app_recs, store_loc, hash_id)
+        repo_rec = new_repo_record(user_name, repo_name, app_recs, build_recs, store_loc, hash_id)
         repo_recs.insert(0, repo_rec)
 
     bcounts = 0
     for repo_rec in repo_recs:
-        for app_rec in repo_rec[APPS]:
-            bs = app_rec['builds']
-            if len(bs) > 0:
-                 if bs[0]['stat'] == STAT_BUILD_PASSED:
-                      bcounts += 1
+        bs = repo_rec['builds']
+        if len(bs) > 0:
+            if bs[0]['stat'] == STAT_BUILD_PASSED:
+                 bcounts += 1
     bcount_rec = new_bcount_record(user_name, repo_name, bcounts)
 
     return repo_recs, bcount_rec
 
 def gen_random_app_records(size_range=[1,1,1,1,2,2,3,4]):
     size = get_any(size_range)
-    app_recs = []
+    app_recs = {}
     for n in range(0,size):
         app_name = '_'.join(get_any_many(APP_NAMES, 1, 4))
-        build_recs = gen_random_build_records()
-        app_rec = new_app_record(app_name, build_recs)
-        app_recs.append( app_rec )
+        app_recs[app_name] = new_app_record( )
     return app_recs
 
 DEFAULT_BUILD_RANGE = [STAT_BUILD_PASSED, STAT_BUILD_PASSED, STAT_BUILD_PASSED, STAT_BUILD_FAILED]
