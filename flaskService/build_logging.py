@@ -15,3 +15,4 @@ def setup_logging(configs, process_name="default_process"):
        main_logger.setLevel(logging.DEBUG)
        handler = graypy.GELFHandler(configs['log']['host'], int(configs['log']['port']), localname=process_name)
        main_logger.addHandler( handler )
+       main_logger.addHandler( logging.StreamHandler() )
