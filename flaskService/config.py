@@ -2,6 +2,7 @@
 from ConfigParser import ConfigParser
 from copy import copy
 from os import path
+import optparse
 
 from mongoDB.config import DEFAULT_DB_CONFIG
 from redisJobQueue.config import DEFAULT_REDIS_CONFIG, REDIS_OPTS
@@ -15,7 +16,7 @@ FILE_LOGGING = 'file'
 GRAY_LOGGING = 'graylog'
 
 DEFAULT_QSERVE_CONFIG = { 'host':'0.0.0.0' , 'port':6060, 'name':'query1' }
-DEFAULT_BUILDER_CONFIG = { 'workdir':'work', 'storeidx':0, 'archivedir':'/data', 'name':'builder1' }
+DEFAULT_BUILDER_CONFIG = { 'workdir':'work', 'storeidx':0, 'archivedir':'/data', 'name':'builder1', 'removework':True }
 DEFAULT_LOG_CONFIG = { 'logtype': FILE_LOGGING, 'filename': 'log', 'host':'0.0.0.0', 'port':12201 }
 
 def default_configs():
@@ -49,8 +50,12 @@ def get_configs(ini_file):
     for bd_opt in conf.options(BUILD_OPTS):
         if bd_opt in ['workdir','storeidx','archivedir','name']:
             bd_config[bd_opt] = conf.get(BUILD_OPTS, bd_opt)
+        if bd_opt == 'removework':
+            rmwork = conf.get(BUILD_OPTS, bd_opt)
+            bd_config[bd_opt] = rmwork in ['true','True'] 
 
     log_config = copy(DEFAULT_LOG_CONFIG)
+    # Parse Logging configurations
     for log_opt in conf.options(LOG_OPTS):
         print log_opt
         if log_opt in ['filename','host','port']:
@@ -73,4 +78,23 @@ def load_configs(ini_file_path):
         return get_configs(ini_file_path)
     else:
         return default_configs()
+
+def load_configs_with_cmd_line_overrides():
+    p = optparse.OptionParser()
+    p.add_option('-i', '--ini', help=".ini file to use", default="app_builder.ini")
+    p.add_option('-n', '--name', help="name of this instance")
+    p.add_option('-w', '--work', help="name of working directory")
+    
+    opts, args = p.parse_args()
+    configs = load_configs(opts.ini)
+    if opts.name != None:
+        configs['build']['name']  = opts.name
+        configs['qserve']['name'] = opts.name
+        configs['redis']['builder']  = opts.name
+    if opts.work != None:
+        configs['build']['workdir'] = opts.work
+
+    return configs
+
+
 

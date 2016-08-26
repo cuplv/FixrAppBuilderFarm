@@ -60,17 +60,18 @@ def new_app_record(src_path=[], class_path=[], jar_path=[], apk_path=[]):
     return { SRC:src_path, CLASS:class_path, JAR:jar_path, APK:apk_path }
 
 
-STAT   = 'stat'			# Build status
+BUILDER = 'builder'		# Name of builder who attempted this         
+STAT    = 'stat'		# Build status
 SNIPPET = 'snippet'		# Build outcome snippet
 
 STAT_BUILD_UNKNOWN = -1
 STAT_BUILD_FAILED  = 0
 STAT_BUILD_PASSED  = 1
 '''
-BUILD-REC :: { STAT:<Int>, SNIPPET:<String>, DT_CREATED:<Int> }
+BUILD-REC :: { BUILDER: <String>, STAT:<Int>, SNIPPET:<String>, DT_CREATED:<Int> }
 '''
-def new_build_record(build_stat, snippet):
-    return { STAT:build_stat, SNIPPET:snippet, DT_CREATED:get_epochtime_now() }
+def new_build_record(builder, build_stat, snippet):
+    return { BUILDER:builder, STAT:build_stat, SNIPPET:snippet, DT_CREATED:get_epochtime_now() }
 
 BCOUNT = 'bcount'		# Total number of successful builds
 '''

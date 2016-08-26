@@ -8,14 +8,14 @@ from mongoDB.query import get_repo_data, get_top_N_buildable_repo_data, get_repo
 from mongoDB.config import DEFAULT_DB_CONFIG
 
 from os import path
-from config import get_configs, default_configs, load_configs, DEFAULT_QSERVE_CONFIG
+from config import get_configs, default_configs, load_configs, DEFAULT_QSERVE_CONFIG, load_configs_with_cmd_line_overrides
 
 from build_logging import setup_logging
 
 app = Flask(__name__)
 
 ini_file_path = 'app_builder.ini'
-CONFIGS = load_configs( ini_file_path )
+CONFIGS = load_configs_with_cmd_line_overrides() # load_configs( ini_file_path )
 
 @app.route("/repo/")
 def query_repo():

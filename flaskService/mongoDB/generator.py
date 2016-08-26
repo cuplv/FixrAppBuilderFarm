@@ -78,7 +78,7 @@ def gen_random_build_records(size_range=[1,6], build_range=DEFAULT_BUILD_RANGE):
     for n in range(0,size):
        build_stat = get_any( build_range )
        snippet    = "Random snippet blah blah blah - %s" % r.randint(100000,9999999)
-       build_rec  = new_build_record(build_stat, snippet)
+       build_rec  = new_build_record("funky_builder", build_stat, snippet)
        build_recs.insert(0, build_rec)
     return build_recs
 

@@ -10,10 +10,10 @@ def get_redis(config=DEFAULT_REDIS_CONFIG):
 # Yes.. its currently serializing JSON. Quick and simple solution
 # TODO: Satisfy Protobuf scums by changing to Protobufs perhaps? 
 
-def push_job(user_name, repo_name, hash_id=None, force_build=False, redis_store=None, config=DEFAULT_REDIS_CONFIG):
+def push_job(user_name, repo_name, hash_id=None, force_build=False, remove=True, redis_store=None, config=DEFAULT_REDIS_CONFIG):
     if redis_store == None:
         redis_store = get_redis(config=config)
-    job = { 'user':user_name, 'repo':repo_name, 'hash':hash_id } # 'force':force_build }
+    job = { 'user':user_name, 'repo':repo_name, 'hash':hash_id, 'force':force_build, 'remove':remove }
     redis_store.lpush( config['jobs'], dumps(job) )
 
 def pop_job(redis_store=None, config=DEFAULT_REDIS_CONFIG):

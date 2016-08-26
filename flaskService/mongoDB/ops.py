@@ -69,7 +69,7 @@ Updating repo records:
     old_repo_rec     - The repository record to be updated
     app_build_updates - Dictionary of mappings app_name: build_record, to be added
 '''
-def update_repo_record(old_repo_rec, stat, snippet, app_updates, config=DEFAULT_DB_CONFIG):
+def update_repo_record(old_repo_rec, builder, stat, snippet, app_updates, config=DEFAULT_DB_CONFIG):
 
     def compare_build_recs(build_recs, build_rec):
         old_stat = 0
@@ -105,7 +105,7 @@ def update_repo_record(old_repo_rec, stat, snippet, app_updates, config=DEFAULT_
     '''
 
     build_recs = old_repo_rec[BUILDS]
-    build_rec  = new_build_record(stat, snippet)
+    build_rec  = new_build_record(builder, stat, snippet)
     delta      = compare_build_recs(build_recs, build_rec)
 
     now = get_epochtime_now()
