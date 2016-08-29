@@ -4,7 +4,7 @@ from bson.json_util import dumps
 from bson.objectid import ObjectId
 
 # from mongoDB.test import get_db
-from mongoDB.query import get_repo_data, get_top_N_buildable_repo_data, get_repo_data_by_ids
+from mongoDB.query import ping_db, show_db_connect_params, get_repo_data, get_top_N_buildable_repo_data, get_repo_data_by_ids, count_totals, TOTAL_COMMIT_BUILDS, TOTAL_REPO_BUILDS, TOTAL_COMMIT_ATTEMPTS, TOTAL_REPO_ATTEMPTS
 from mongoDB.config import DEFAULT_DB_CONFIG
 
 from os import path
@@ -43,9 +43,20 @@ def query_ids():
     resp = get_repo_data_by_ids(oids.split(','), config=CONFIGS['db'])
     return jsonify( result=resp )
 
+@app.route("/count/commit/builds/")
+def query_count_commit_builds():
+    count = count_totals( TOTAL_COMMIT_BUILDS, config=CONFIGS['db'] )
+    return jsonify( total=count )
 
+@app.route("/count/repo/builds/")
+def query_count_repo_builds():
+    count = count_totals( TOTAL_REPO_BUILDS, config=CONFIGS['db'] )
+    return jsonify( total=count )
 
 if __name__ == "__main__":
     setup_logging( CONFIGS, process_name = CONFIGS['qserve']['name'] )
-    app.run(host=CONFIGS['qserve']['host'], port=CONFIGS['qserve']['port'])
+    if ping_db(config=CONFIGS['db']):
+         app.run(host=CONFIGS['qserve']['host'], port=CONFIGS['qserve']['port'])
+    else:
+         print "terminating ..."
 
