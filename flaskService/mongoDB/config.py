@@ -4,7 +4,7 @@ from copy import copy
 
 DB_OPTS = 'dbOptions'
 
-DEFAULT_DB_CONFIG = { 'name':'app_builder_db', 'host':None, 'port':None }
+DEFAULT_DB_CONFIG = { 'name':'app_builder_db', 'host':None, 'port':None, 'user':None, 'pwd':None }
 
 def get_configs(ini_file):
     db_config = copy(DEFAULT_DB_CONFIG)
