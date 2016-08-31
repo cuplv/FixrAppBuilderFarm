@@ -16,16 +16,16 @@ def get_redis(config=DEFAULT_REDIS_CONFIG):
 # Yes.. its currently serializing JSON. Quick and simple solution
 # TODO: Satisfy Protobuf scums by changing to Protobufs perhaps? 
 
-def push_job(user_name, repo_name, hash_id=None, force_build=False, remove=True, redis_store=None, config=DEFAULT_REDIS_CONFIG):
+def push_job(user_name, repo_name, hash_id=None, dt_committed=None, force_build=False, remove=True, redis_store=None, config=DEFAULT_REDIS_CONFIG):
     if redis_store == None:
         redis_store = get_redis(config=config)
-    job = { 'user':user_name, 'repo':repo_name, 'hash':hash_id, 'force':force_build, 'remove':remove }
+    job = { 'user':user_name, 'repo':repo_name, 'hash':hash_id, 'dt_committed':dt_committed, 'force':force_build, 'remove':remove }
     redis_store.lpush( config['jobs'], dumps(job) )
 
-def push_failed_job(user_name, repo_name, hash_id, force_build=False, remove=True, redis_store=None, config=DEFAULT_REDIS_CONFIG):
+def push_failed_job(user_name, repo_name, hash_id=None, dt_committed=None, force_build=False, remove=True, fail_stat='FL', redis_store=None, config=DEFAULT_REDIS_CONFIG):
     if redis_store == None:
         redis_store = get_redis(config=config)
-    job = { 'user':user_name, 'repo':repo_name, 'hash':hash_id, 'force':force_build, 'remove':remove }
+    job = { 'user':user_name, 'repo':repo_name, 'hash':hash_id, 'dt_committed':dt_committed, 'force':force_build, 'remove':remove, 'fail_stat':fail_stat }
     redis_store.lpush( config['failed'], dumps(job) )
 
 def pop_job(redis_store=None, config=DEFAULT_REDIS_CONFIG):

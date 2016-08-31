@@ -32,18 +32,29 @@ def pretty_epochtime(epochtime):
 USER   = 'user'			# User name
 REPO   = 'repo'			# Repository name
 HASH   = 'hash'			# Commit Hash
+DT_COMMITTED = 'dt_committed'	# Date and time this repo was committed (in GitHub)	**
+PROJ_TYPE = 'ptype'		# Project type						**
 STORE  = 'store'		# Storage location ID
 APPS   = 'apps'			# Android application records
 BUILDS = 'builds'               # Build records
 DT_CREATED = 'dt_created'	# Date and time this record was created
 DT_MODIFIED = 'dt_modified'     # Date and time this record was last modified
+
+
+GRD_TYPE = 'GRD'
+ANT_TYPE = 'ANT'
+MAV_TYPE = 'MAV'
+ECP_TYPE = 'ECP'
+UNK_TYPE = 'UNK'
+
 '''
-REPO-REC :: { USER:<String>, REPO:<String>, HASH:<String>, STORE:<Int>, APPS:<APP_DICT>, BUILDS:[<BUILD-REC>] , DT_CREATED:<Int>, DT_MODIFIED:<Int> }
+REPO-REC :: { USER:<String>, REPO:<String>, HASH:<String>, DT_COMMITTED:<Int>, PROJ_TYPE:<String> , STORE:<Int>, APPS:<APP_DICT>, 
+            , BUILDS:[<BUILD-REC>] , DT_CREATED:<Int>, DT_MODIFIED:<Int> }
 '''
-def new_repo_record(user_name, repo_name, app_records, build_records, store_loc=0, hash_id="head"):
+def new_repo_record(user_name, repo_name, dt_committed, proj_type, app_records, build_records, store_loc=0, hash_id="head"):
     time_now = get_epochtime_now()
-    return { USER:user_name, REPO:repo_name, HASH:hash_id, STORE:store_loc, APPS:app_records, BUILDS:build_records
-           , DT_CREATED:time_now, DT_MODIFIED:time_now }
+    return { USER:user_name, REPO:repo_name, HASH:hash_id, DT_COMMITTED:dt_committed, PROJ_TYPE:proj_type, STORE:store_loc
+           , APPS:app_records, BUILDS:build_records, DT_CREATED:time_now, DT_MODIFIED:time_now }
 
 
 SRC   = 'src'		# Paths to the .java files (each corresponds to a directory where .java files a located at)
@@ -61,24 +72,45 @@ def new_app_record(src_path=[], class_path=[], jar_path=[], apk_path=[]):
 
 
 BUILDER = 'builder'		# Name of builder who attempted this         
+FIX_APPLIED = 'fix_applied'	# Fix heuristics applied			**
 STAT    = 'stat'		# Build status
 SNIPPET = 'snippet'		# Build outcome snippet
 
-STAT_BUILD_UNKNOWN = -1
-STAT_BUILD_FAILED  = 0
-STAT_BUILD_PASSED  = 1
-'''
-BUILD-REC :: { BUILDER: <String>, STAT:<Int>, SNIPPET:<String>, DT_CREATED:<Int> }
-'''
-def new_build_record(builder, build_stat, snippet):
-    return { BUILDER:builder, STAT:build_stat, SNIPPET:snippet, DT_CREATED:get_epochtime_now() }
+GRD_FIX_1 = 'GRD_FIX_1'
+GRD_FIX_2 = 'GRD_FIX_2'
 
-BCOUNT = 'bcount'		# Total number of successful builds
+STAT_BUILD_TIMEDOUT = 'KO'
+STAT_BUILD_SKIPPED  = 'SK'
+STAT_BUILD_EXCEPT   = 'EX'
+STAT_BUILD_FAILED   = 'FL'
+STAT_BUILD_PASSED   = 'PS'
 '''
-BCOUNT-REC :: { USER:<String>, REPO:<String>, BCOUNT:<Int> }
+BUILD-REC :: { BUILDER: <String>, FIX_APPLIED:[<String>], STAT:<Int>, SNIPPET:<String>, DT_CREATED:<Int> }
 '''
-def new_bcount_record(user_name, repo_name, bcount):
-    return { USER:user_name, REPO:repo_name, BCOUNT:bcount }
+def new_build_record(builder, fix_applied, build_stat, snippet, dt_created):
+    return { BUILDER:builder, FIX_APPLIED:fix_applied, STAT:build_stat, SNIPPET:snippet, DT_CREATED:dt_created }
 
+BUILDS  = 'builds'		# Total number of successful builds
+FAILS   = 'fails'		# Total number of failed builds
+SKIPS   = 'skips'		# Total number of skipped commits (no builds, e.g., no gradle files)
+EXCEPTS = 'excepts'             # Total number of exception builds (exception occurred during build)
+TIMEOUTS = 'timeouts'		# Total number of timed out builds
+'''
+BCOUNT-REC :: { USER:<String>, REPO:<String>, BUILDS:<Int>, FAILS:<INT>, SKIPS:<INT>, EXCEPTS:<INT>, TIMEOUTS:<INT> }
+'''
+def new_bcount_record(user_name, repo_name, builds, fails, skips, excepts, timeouts):
+    return { USER:user_name, REPO:repo_name, BUILDS:builds, FAILS:fails, SKIPS:skips, EXCEPTS:excepts, TIMEOUTS:timeouts }
+
+def bcount_field(stat):
+    if stat == STAT_BUILD_PASSED:
+        return BUILDS
+    elif stat == STAT_BUILD_FAILED:
+        return FAILS
+    elif stat == STAT_BUILD_SKIPPED:
+        return SKIPS
+    elif stat == STAT_BUILD_EXCEPT:
+        return EXCEPTS
+    elif stat == STAT_BUILD_TIMEOUT:
+        return TIMEOUTS
 
 

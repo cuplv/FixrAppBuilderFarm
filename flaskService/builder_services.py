@@ -10,16 +10,20 @@ from redisJobQueue.config import DEFAULT_REDIS_CONFIG
 from redisJobQueue.ops import ping_redis, show_redis_connect_params, get_redis, bpop_job, pop_admin_task, push_failed_job, BUILDER_TERMINATE
 from appbuilder.app_builder import run_builder, RepoProcessor
 from mongoDB.query import ping_db, show_db_connect_params
-from mongoDB.ops import get_or_create_new_repo_record, update_repo_record
+from mongoDB.ops import get_or_create_new_repo_record, update_records
+from mongoDB.records import STAT_BUILD_PASSED
 
 ini_file_path = 'app_builder.ini'
 CONFIGS = load_configs_with_cmd_line_overrides() # load_configs( ini_file_path )
 
+'''
 def db_get_repo_record(user_name, repo_name, hash_id):
     return get_or_create_new_repo_record(user_name, repo_name, hash_id=hash_id, config=CONFIGS['db'])
-
+'''
+'''
 def db_update_repo_record(repo_record, stat, snippet, app_updates):
     return update_repo_record(repo_record, CONFIGS['build']['name'], stat, snippet, app_updates, config=CONFIGS['db'])
+'''
 
 def input_reader(sig):
     while True:
@@ -60,7 +64,7 @@ Builder Daemon %s in Action
 
     # Setup a repository processor
     repoProcessor = RepoProcessor(CONFIGS['build']['workdir'], CONFIGS['build']['archivedir'], ext_archive=CONFIGS['build']['archivehost'])
-    repoProcessor.setDBOps(db_get_repo_record, db_update_repo_record)
+    # repoProcessor.setDBOps(db_get_repo_record, db_update_repo_record)
 
     print msg
 
@@ -73,6 +77,7 @@ Builder Daemon %s in Action
     terminated = False
     while True:
        new_job = None
+       job_failed = False
        try:
            new_job = bpop_job(timeout=5, redis_store=rd, config=CONFIGS['redis'])
        except Exception, e:
@@ -99,17 +104,43 @@ Builder Daemon %s in Action
 
        # process a job
        if new_job != None:
-           if new_job['hash'] == None:
-               repo = (new_job['user'],new_job['repo'])
-           else:
-               repo = (new_job['user'],new_job['repo'],new_job['hash'])
+           user_name = new_job['user']
+           repo_name = new_job['repo']
+           hash_id   = new_job['hash'] if new_job['hash'] != None else "head"
+           dt_committed = new_job['dt_committed'] 
+
            try:
-               succ = repoProcessor.processFromDB( [repo], force_build=new_job['force'], remove=new_job['remove'] )
-               if not succ:
-                   push_failed_job(new_job['user'], new_job['repo'], new_job['hash'], force_build=True, remove=True, redis_store=rd, config=CONFIGS['redis'])
+               repo_rec, created, was_succ = get_or_create_new_repo_record(user_name, repo_name, store_loc=0, hash_id=hash_id, dt_committed=dt_committed, config=CONFIGS['db'])
            except Exception, e:
-               logging.error('Fatal exception occurred while processing repo: %s %s %s' % (new_job['user'],new_job['repo'],new_job['hash']), exc_info=True)    
-       
+               logging.error('Fatal exception occurred while extracting repo records: %s %s %s' % (user_name, repo_name, hash_id), exc_info=True)    
+               job_failed = True
+
+           bres = None
+           try:
+               if was_succ and not new_job['force']:
+                   logging.info("Already built, ignoring job: %s %s %s" % (user_name,repo_name,hash_id))
+               else:  
+                   bres = repoProcessor.processFromDB(user_name, repo_name, hash_id=hash_id, remove=new_job['remove'] )
+                   job_failed = bres['build_stat'] != STAT_BUILD_PASSED
+           except Exception, e:
+               logging.error('Fatal exception occurred while processing repo: %s %s %s' % (user_name, repo_name, hash_id), exc_info=True)    
+               job_failed = True
+
+           if bres != None:
+               # Start uploading the build meta-data into MongoDB
+               try:
+                   update_records(CONFIGS['build']['name'], repo_rec, bres, config=CONFIGS['db'])
+               except Exception, e:
+                   logging.error('Fatal exception occurred while uploading meta-data to mongoDB: %s %s %s'  % (user_name, repo_name, hash_id), exc_info=True)    
+                   job_failed = True 
+
+           if job_failed:
+               if bres != None:
+                   fail_stat = bres['build_stat']
+               else:
+                   fail_stat = 'EX'
+               push_failed_job(user_name, repo_name, hash_id, dt_committed=dt_committed, force_build=False, remove=True, fail_stat=fail_stat, config=CONFIGS['redis'])
+
            print msg
 
        # If kill signal was received, stop

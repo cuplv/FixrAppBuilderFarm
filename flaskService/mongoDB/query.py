@@ -8,7 +8,7 @@ from bson.objectid import ObjectId
 
 from config import DEFAULT_DB_CONFIG
 # from ops import get_db, COLL_REPOS, COLL_BCOUNTS
-from records import REPO, USER, HASH, BCOUNT
+from records import REPO, USER, HASH, BUILDS
 
 COLL_REPOS   = 'repos'
 COLL_BCOUNTS = 'bcounts'
