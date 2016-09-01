@@ -1,6 +1,7 @@
 
 import os
 import logging
+import math
 
 from pymongo import MongoClient, DESCENDING
 
@@ -95,7 +96,12 @@ def get_repo_build_counts(user_name, repo_name, config=DEFAULT_DB_CONFIG):
         repo = "%s/%s" % (brec['user'],brec['repo'])
         repo_dict[repo] = ()
     total_repos_wf = len( repo_dict.keys() )
-    return { 'all': { 'commits':total_commits, 'repos':total_repos }, 'fix_applied': { 'commits':total_commits_wf, 'repos':total_repos_wf } }
+
+    commit_fix_rate = "fixed_commits / (all_commits) * 100 = %s%%" % roundoff(float(total_commits_wf) / (total_commits) * 100) 
+    repo_fix_rate = "fixed_repos / (all_repos) * 100 = %s%%" % roundoff(float(total_repos_wf) / (total_repos) * 100) 
+
+    return { 'all': { 'commits':total_commits, 'repos':total_repos }, 'fix_applied': { 'commits':total_commits_wf, 'repos':total_repos_wf } 
+           , 'stat': { 'commit_fix_rate':commit_fix_rate, 'repo_fix_rate':repo_fix_rate } }
 
 # Get top n most buildable repository data
 def get_top_N_buildable_repo_data(n=50, config=DEFAULT_DB_CONFIG):
@@ -133,6 +139,9 @@ def count_totals(count_type, config=DEFAULT_DB_CONFIG):
     else:
         # TODO
         return 0 
+
+def roundoff(v):
+    return math.ceil(v*100)/100
 
 def count_all_totals(config=DEFAULT_DB_CONFIG):
     app_builder_db = get_db(config=config)
@@ -181,10 +190,15 @@ def count_all_totals(config=DEFAULT_DB_CONFIG):
         skips    += rec_skips
         excepts  += rec_excepts
         timeouts += rec_timeouts
+
+    build_rate = "builds / (builds+fails) * 100 = %s%%" % roundoff(float(builds) / (builds+fails) * 100) 
+    repo_build_rate = "builds / (builds+fails) * 100 = %s%%" % roundoff(float(repos_built) / (repos_built+repos_failed) * 100) 
+
     return { 'repos': { 'builds':repos_built, 'fails':repos_failed, 'skips':repos_skipped, 'excepts':repos_except, 'timeouts':repos_timeout
                       , 'unknown':repos_unknown, 'total': repos_built+repos_failed+repos_skipped+repos_except+repos_timeout+repos_unknown } 
            , 'commits' : { 'builds':builds, 'fails':fails, 'skips':skips, 'excepts':excepts, 'timeouts':timeouts
-                         , 'total': builds + fails + skips + excepts + timeouts } }
+                         , 'total': builds + fails + skips + excepts + timeouts } 
+           , 'stats': { 'commit_build_rate':build_rate, 'repo_build_rate':repo_build_rate } }
 
 # Get repository data by id
 def get_repo_data_by_id(oid, config=DEFAULT_DB_CONFIG):
