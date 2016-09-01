@@ -101,7 +101,7 @@ def get_repo_build_counts(user_name, repo_name, config=DEFAULT_DB_CONFIG):
 def get_top_N_buildable_repo_data(n=50, config=DEFAULT_DB_CONFIG):
     app_builder_db = get_db(config=config)
     bcount_col = app_builder_db[COLL_BCOUNTS]    
-    return preprocess_records( bcount_col.find().sort([(BCOUNT,DESCENDING)]).limit(n) )
+    return preprocess_records( bcount_col.find().sort([(BUILDS,DESCENDING)]).limit(n) )
 
 # Get repository data by ids
 def get_repo_data_by_ids(oids, config=DEFAULT_DB_CONFIG):
