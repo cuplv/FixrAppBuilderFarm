@@ -45,6 +45,11 @@ def bpop_job(timeout=0, redis_store=None, config=DEFAULT_REDIS_CONFIG):
     else:
        return None
 
+def num_of_jobs(redis_store=None, config=DEFAULT_REDIS_CONFIG):
+    if redis_store == None:
+        redis_store = get_redis(config=config)
+    return redis_store.llen( config['jobs'] )
+
 def show_redis_connect_params(config=DEFAULT_REDIS_CONFIG, verbose=False):
     host = config['host']
     port = config['port']

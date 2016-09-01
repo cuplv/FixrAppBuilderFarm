@@ -36,7 +36,7 @@ def preprocess_records(find_output):
     return response
 
 # Standard query for repository data
-def get_repo_data(user_name=None, repo_name=None, hash_id=None, config=DEFAULT_DB_CONFIG):
+def get_repo_data(user_name=None, repo_name=None, hash_id=None, stats=[], config=DEFAULT_DB_CONFIG):
     app_builder_db = get_db(config=config)
     query = {}
     if user_name != None:
@@ -45,7 +45,57 @@ def get_repo_data(user_name=None, repo_name=None, hash_id=None, config=DEFAULT_D
        query[REPO] = repo_name 
     if hash_id != None:
        query[HASH] = hash_id
-    return preprocess_records( app_builder_db[COLL_REPOS].find(query) )
+    if len(stats) == 0:
+       return preprocess_records( app_builder_db[COLL_REPOS].find(query) )
+    else:
+       recs = []
+       for rec in app_builder_db[COLL_REPOS].find(query):
+           builds = rec['builds']
+           if len(builds) > 0:
+               if builds[0]['stat'] in stats:
+                   recs.append( rec )
+           else:
+               if 'EX' in stats:
+                   recs.append( rec )
+       return preprocess_records( recs )
+
+def get_repo_builds_with_fixes(user_name=None, repo_name=None, hash_id=None, config=DEFAULT_DB_CONFIG):
+    app_builder_db = get_db(config=config)
+    query = {}
+    if user_name != None:
+       query[USER] = user_name
+    if repo_name != None:
+       query[REPO] = repo_name 
+    if hash_id != None:
+       query[HASH] = hash_id
+    recs = []
+    for rec in app_builder_db[COLL_REPOS].find(query):
+       builds = rec['builds']
+       add = False
+       for build in builds:
+           if build['stat'] == 'PS' and len(build['fix_applied']) > 0:
+               add = True
+               break
+       if add:
+            recs.append( rec )
+    return preprocess_records( recs )
+
+def get_repo_build_counts(user_name, repo_name, config=DEFAULT_DB_CONFIG):
+    brecs = get_repo_data(user_name=user_name, repo_name=repo_name, stats=['PS'], config=config)
+    total_commits = len( brecs )
+    repo_dict = {}
+    for brec in brecs:
+        repo = "%s/%s" % (brec['user'],brec['repo'])
+        repo_dict[repo] = ()
+    total_repos = len( repo_dict.keys() )
+    brecs = get_repo_builds_with_fixes(user_name=user_name, repo_name=repo_name, config=config)
+    total_commits_wf = len( brecs )
+    repo_dict = {}
+    for brec in brecs:
+        repo = "%s/%s" % (brec['user'],brec['repo'])
+        repo_dict[repo] = ()
+    total_repos_wf = len( repo_dict.keys() )
+    return { 'all': { 'commits':total_commits, 'repos':total_repos }, 'fix_applied': { 'commits':total_commits_wf, 'repos':total_repos_wf } }
 
 # Get top n most buildable repository data
 def get_top_N_buildable_repo_data(n=50, config=DEFAULT_DB_CONFIG):
@@ -72,17 +122,69 @@ def count_totals(count_type, config=DEFAULT_DB_CONFIG):
     app_builder_db = get_db(config=config)
     if count_type in [TOTAL_COMMIT_BUILDS,TOTAL_REPO_BUILDS]:
         bcount_col = app_builder_db[COLL_BCOUNTS]
-        it = bcount_col.find( { 'bcount' : { '$gt' : 0 } } )
+        it = bcount_col.find( { 'builds' : { '$gt' : 0 } } )
         if count_type == TOTAL_COMMIT_BUILDS:
             total = 0
             for i in it:
-                total += i['bcount']
+                total += i['builds']
             return total
         else:
             return it.count()
     else:
         # TODO
         return 0 
+
+def count_all_totals(config=DEFAULT_DB_CONFIG):
+    app_builder_db = get_db(config=config)
+    builds = 0
+    fails = 0
+    skips = 0
+    excepts = 0
+    timeouts = 0
+    repos_built = 0
+    repos_failed = 0
+    repos_skipped = 0
+    repos_except  = 0
+    repos_timeout = 0
+    repos_unknown = 0
+    for rec in app_builder_db[COLL_BCOUNTS].find():
+        rec_builds   = rec.get('builds', 0)
+        rec_fails    = rec.get('fails', 0)
+        rec_skips    = rec.get('skips', 0)
+        rec_excepts  = rec.get('excepts', 0)
+        rec_timeouts = rec.get('timeouts', 0)
+        if rec_builds > 0:
+            repos_built += 1
+        else:
+            stat = 'UN'
+            if rec_skips > 0:
+                stat = 'SK'
+            if rec_fails > 0:
+                stat = 'FL'
+            if rec_excepts > 0:
+                stat = 'EX'
+            if rec_timeouts > 0:
+                stat = 'KO'
+            if stat == 'SK':
+                repos_skipped += 1
+            elif stat == 'FL':
+                repos_failed += 1
+            elif stat == 'EX':
+                repos_except += 1
+            elif stat == 'KO': 
+                repos_timeout += 1
+            else:
+                repos_unknown += 1
+ 
+        builds   += rec_builds
+        fails    += rec_fails
+        skips    += rec_skips
+        excepts  += rec_excepts
+        timeouts += rec_timeouts
+    return { 'repos': { 'builds':repos_built, 'fails':repos_failed, 'skips':repos_skipped, 'excepts':repos_except, 'timeouts':repos_timeout
+                      , 'unknown':repos_unknown, 'total': repos_built+repos_failed+repos_skipped+repos_except+repos_timeout+repos_unknown } 
+           , 'commits' : { 'builds':builds, 'fails':fails, 'skips':skips, 'excepts':excepts, 'timeouts':timeouts
+                         , 'total': builds + fails + skips + excepts + timeouts } }
 
 # Get repository data by id
 def get_repo_data_by_id(oid, config=DEFAULT_DB_CONFIG):
