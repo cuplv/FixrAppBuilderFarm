@@ -110,7 +110,7 @@ def bcount_field(stat):
         return SKIPS
     elif stat == STAT_BUILD_EXCEPT:
         return EXCEPTS
-    elif stat == STAT_BUILD_TIMEOUT:
+    elif stat == STAT_BUILD_TIMEDOUT:
         return TIMEOUTS
 
 

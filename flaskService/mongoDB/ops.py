@@ -102,7 +102,7 @@ def update_records(builder_name, repo_rec, build_res, maximum=9, config=DEFAULT_
     # Compute the delta of the counts to this repository 
     # (Only the top most build stat matters, so we just compare the new build with the previous top) 
     curr_stat = build_res['build_stat']
-    prev_stat = build_recs[0] if len(build_recs) > 0 else None
+    prev_stat = build_recs[0]['stat'] if len(build_recs) > 0 else None
     if curr_stat == prev_stat:
         # No change in status so do nothing else
         pass
