@@ -16,7 +16,8 @@ FILE_LOGGING = 'file'
 GRAY_LOGGING = 'graylog'
 
 DEFAULT_QSERVE_CONFIG = { 'host':'0.0.0.0' , 'port':6060, 'name':'query1' }
-DEFAULT_BUILDER_CONFIG = { 'workdir':'work', 'storeidx':0, 'archivehost':None, 'archivedir':'/data', 'name':'builder1', 'removework':True }
+DEFAULT_BUILDER_CONFIG = { 'workdir':'work', 'storeidx':0, 'archivehost':None, 'archivedir':'/data', 'name':'builder1'
+                         , 'gradlefarmpath':'/data/gradle_farm', 'removework':True }
 DEFAULT_LOG_CONFIG = { 'logtype': FILE_LOGGING, 'filename': 'log', 'host':'0.0.0.0', 'port':12201 }
 
 def default_configs():
@@ -48,7 +49,7 @@ def get_configs(ini_file):
     bd_config = copy(DEFAULT_BUILDER_CONFIG)
     # Parse Builder Service configurations
     for bd_opt in conf.options(BUILD_OPTS):
-        if bd_opt in ['workdir','storeidx','archivehost','archivedir','name']:
+        if bd_opt in ['workdir','storeidx','archivehost','archivedir','name','gradlefarmpath']:
             bd_config[bd_opt] = conf.get(BUILD_OPTS, bd_opt)
         if bd_opt == 'removework':
             rmwork = conf.get(BUILD_OPTS, bd_opt)

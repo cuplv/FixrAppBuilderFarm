@@ -11,9 +11,11 @@ def get_epochtime_from_str(dt_str):
     return int(dt.strftime('%s'))
 
 
-def retrieve_history_json_and_load_redis(jsonfilename, force_build=False, remove=True, skip_first=0, max_per_repo=5, redis_store=None, config=DEFAULT_REDIS_CONFIG):
+def retrieve_and_load_redis(jsonfilename, force_build=False, remove=True, skip_first=0, max_per_repo=5, dry_run=False, redis_store=None, config=DEFAULT_REDIS_CONFIG):
     if redis_store == None:
         redis_store = get_redis( config=config )
+    num_repos   = 0
+    num_commits = 0
     with open(jsonfilename, "r") as f:
         line = f.readline()
         while line != '':
@@ -24,16 +26,22 @@ def retrieve_history_json_and_load_redis(jsonfilename, force_build=False, remove
                    if commit_count < max_per_repo:
                        user_name,repo_name = data['repo'].split("/")
                        dt_committed = get_epochtime_from_str( data['date'] )
-                       push_job(user_name, repo_name, hash_id=data['hash'], dt_committed=dt_committed, force_build=force_build, remove=remove, 
-                                redis_store=redis_store, config=config)
+                       if not dry_run:
+                           push_job(user_name, repo_name, hash_id=data['hash'], dt_committed=dt_committed, force_build=force_build, remove=remove, 
+                                    redis_store=redis_store, config=config)
                        print "Added: %s  %s  %s" % (user_name,repo_name,data['hash'])
+                       num_commits += 1
                    else:
                        break
                    commit_count += 1
                 else:
                    skip_count += 1
             line = f.readline()
-    print "Done!"
+            num_repos += 1
+    if not dry_run:
+        print "Done! %s commits (%s repos) sent to redis@%s:%s" % (num_commits, num_repos, config['host'], config['port'])
+    else:
+        print "Dry Run Complete! %s commits (%s repos) iterated!" % (num_commits, num_repos)
 
 
 def count_repos_history_json(jsonfilename):
@@ -54,6 +62,8 @@ def watch_list_1():
             ,("googlecast","CastHelloText-android","90bb8814a4429955fbaf7d6f0ca68c41974823a7")
             ,("googlecast","CastHelloText-android","8a2e7c775f7da57875a7b5ddb095e68bc9ebbc38")]
 
+def watch_list_2():
+     return [("yangtzeu","yangtzeu-app","head")]
 
 def retrieve_and_load_redis_wl(jsonfilename, watch_list, force_build=False, remove=True, skip_first=0, max_per_repo=5, 
                                redis_store=None, config=DEFAULT_REDIS_CONFIG):

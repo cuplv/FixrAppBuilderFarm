@@ -63,7 +63,8 @@ Builder Daemon %s in Action
     rd = get_redis( config=CONFIGS['redis'] )
 
     # Setup a repository processor
-    repoProcessor = RepoProcessor(CONFIGS['build']['workdir'], CONFIGS['build']['archivedir'], ext_archive=CONFIGS['build']['archivehost'])
+    repoProcessor = RepoProcessor(CONFIGS['build']['workdir'], CONFIGS['build']['archivedir'], ext_archive=CONFIGS['build']['archivehost']
+                                 ,gradle_farm=CONFIGS['build']['gradlefarmpath'])
     # repoProcessor.setDBOps(db_get_repo_record, db_update_repo_record)
 
     print msg
