@@ -1,9 +1,10 @@
 
+import os
 import json
 from datetime import datetime
 
 from config import DEFAULT_REDIS_CONFIG
-from ops import get_redis, push_job
+from ops import get_redis, push_job, pop_job
 
 # Date str format: "2014-05-13 09:38:56 +0530"
 def get_epochtime_from_str(dt_str):
@@ -90,6 +91,35 @@ def retrieve_and_load_redis_wl(jsonfilename, watch_list, force_build=False, remo
                    skip_count += 1
             line = f.readline()
     print "Done!"
+
+
+def move_jobs(source, target, redis_store=None, config=DEFAULT_REDIS_CONFIG):
+    if redis_store == None:
+        redis_store = get_redis( config=config )
+    data = redis_store.lpop( source )
+    count = 0
+    while data != None:
+       redis_store.lpush( target, data )
+       data = redis_store.lpop( source )
+       count += 1
+    print "Done! Moved %s entries from %s to %s" % (count, source, target)
+
+def extract_jobs(source, target, stats, redis_store=None, config=DEFAULT_REDIS_CONFIG):
+    if redis_store == None:
+        redis_store = get_redis( config=config )
+    data = redis_store.lpop( source )
+    count = 0
+    tmp = "tmp_%s" % os.getpid()
+    while data != None:
+       job = json.loads( data )
+       if job['fail_stat'] in stats:
+           redis_store.lpush( target, data )
+           count += 1
+       else:
+           redis_store.lpush( tmp, data )
+       data = redis_store.lpop( source )
+    move_jobs(tmp, source, redis_store=redis_store, config=config)
+    print "Done! Moved %s entries from %s to %s" % (count, source, target)
 
 
 
