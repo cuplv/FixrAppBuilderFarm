@@ -5,7 +5,7 @@
 Its our Full-Stack Cloud Service for the Fixr App Builder script. Before the technical blah blah blahs, lets 
 take a look at a diagram that describes what it is:
 
-<img src="build_farm.png" width="700" height="480">
+<img src="build_farm.png" width="720" height="490">
 
 This prototype system is our current attempt to scale up our Android app building operations. It is currently
 a grease monkey jerry-rigged monstrosity, but hopefully in time, it will be polished and robust enough to be
@@ -87,7 +87,7 @@ use Redis and its Python bindings.
 
 You should start Redis with basic password authentication, run the following in a screen:
 
-> redis-server --requirepass <password>
+> redis-server --requirepass (password)
 
 The alternative is to create a Redis configuration file with this password requirement, and/or run redis server as an OS service.
 Note that Redis' default port used is 6379.
@@ -103,7 +103,7 @@ To do this, modify the conf file, normally found in /etc/mongod.conf and restart
 also need to create a MongoDB user which the Fixr App Builders can authenticate as (See https://docs.mongodb.com/manual/).
 Default network port for MongoDB is 27017.
 
-### Central Logging
+### GrayLog Central Logging Service
 
 Dependencies: GrayLog 2.1.0, Java (>=8), MongoDB (>=2.4), ElasticSearch (>=2.x)
 
@@ -113,7 +113,7 @@ Dependencies: GrayLog 2.1.0, Java (>=8), MongoDB (>=2.4), ElasticSearch (>=2.x)
 Following the instructions in the GrayLog website, they are pretty complete. Once you have setup the server, you should be
 able to enter the console, if you have expose the appropriate ports on your VM (default 9000).
 
-### Fixr Build Query
+### Fixr Build Query Service
 
 Dependencies: Flask 0.11, MongoDB 3.0.4, PyMongo 3.3.0, Redis 3.2.3, Python 2.7, redis-py 2.10.5
 
@@ -130,7 +130,7 @@ Flask script in the flaskService folder:
 You can do this either on bare-metal on a screen (if you are ok getting hacked eventually), or behing your favorite web server (Apache, Ngix, etc..)
 Default port is 8080.
 
-### Fixr App Builder
+### Fixr App Builder Service
 
 Dependencies: MongoDB 3.0.4, PyMongo 3.3.0, Redis 3.2.3, Python 2.7, redis-py 2.10.5, Java (>=8), Android SDKs/NDK (platform tools/tools and ALL sdks), 
 Gradle (primary 2.14.1, plus ALL other versions)
@@ -162,8 +162,5 @@ are stored.
 * logOptions: Logging option to be used. 'logtype' indicate the type of logging to use. Currently supports graylog (default)
 and filelog. For Graylog, you must specify the host name and port of the GrayLog service used, while standard file log
 requires the 'filename'.
-
-
-
 
 
