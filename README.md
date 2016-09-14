@@ -53,6 +53,15 @@ cluster, the Fixr App Builder is currently deployed as follows on the following 
 
 * fixr_clustering_new (192.12.243.136) in PL Project: Running x2 builder threads
 
+## Querying the Farm
+
+More documentation for querying the farm will be added soon. But for now, try the following URL to poke at the query interface:
+
+> http://192.12.242.242:8080/count/all/
+
+We need everyone's feedback on what kind of query interfaces are required for app building integration with your 
+respective Fixr tools. Please feel free to submit requests/demands to edmund.lam@colorado.edu ! 
+
 ## Dependencies and Install/Deployment instructions
 
 Deployment of the Fixr App Builder Farm is currently a rather involved process. Why shouldn't it be? Since it
