@@ -77,7 +77,10 @@ VM/PC.
 Get you favorite package management and auxiliary dev/support tools (e.g., apt-get, easy_install, pip, wget, make). 
 This project was tested and deployed on Ubuntu 14.04 and 16.04, so if you have not noticed, instructions here
 will be obviously Ubuntu-centric. But you are a capable and adaptable young person, you'll easily figure out
-the equivalent tools on your favorite OS.
+the equivalent tools on your favorite OS. This GitHub repository has a sub-module! So remember to recursively
+clone it when you clone this repository, i.e.,
+
+> git clone --recursive https://github.com/cuplv/FixrAppBuilderFarm.git
 
 Also, note that in the following, we will report the default network ports in which the subcomponent uses. This can
 of course be modified, but most importantly for web access of these sub-systems, the VM's security group must include
@@ -151,6 +154,7 @@ Remember to export the variable GRADLE_HOME pointing to the root of your Gradle 
 
 The above are the easy bits. There's still a number of things you'll need to do, particularly the following:
 
+- Create symbolic link in flaskService folder to appbuilder folder in submodule FixrAppBuilder 
 - Get and update Android SDKs and Android NDK
 - Get GitHub commandline tool and search API library
 - Get all versions of Gradle
@@ -160,7 +164,13 @@ Yes, that's a lot of things. One possibility is to follow the cookie crumbles fo
 It contains most of these steps, but you'll need to mod it a little to work as raw shell bashing (not just blind cut and paste, you lazy brat.. =P). Alternatively,
 try following the rest of the instructions.
 
-You'll need the GitHub command line tools and search API libraries. apt-get the command line tool:
+Create a symbolic link in flaskService folder to appbuilder folder in submodule FixrAppBuilder. Simple, from flaskService, run the command:
+
+> ln -s ../FixrAppBuilder/appbuilder appbuilder
+
+Should work, but if you get the exception that ../FixAppBuilder/appbuilder does not exist, you probably did not download the FixrAppBuilder
+submodule by adding the '--recursive' flag while cloning this GitHub repository. Please do this, and try again with the submodule. 
+Next, you'll need the GitHub command line tools and search API libraries. apt-get the command line tool:
 
 > sudo apt-get install git
 
