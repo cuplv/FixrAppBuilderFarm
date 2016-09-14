@@ -39,6 +39,8 @@ provides a query interface intended for other Fixr tools to extract build inform
 implement a simple FTP service to allow Fixr tools to retrieve build outputs (Currently not deployed, but can easily
 be done when need arises). 
 
+For more details on this project, check out the slides at https://docs.google.com/presentation/d/1OaQXd3CWOb_4roxCP8z6_rJf45uhoOs8ehTfB9-hy-s/edit?usp=sharing
+
 ## Current Deployment Layout
 
 The current deployoment layout is... well, bad. In an ideal world, each box (as well as cylinder) in the above diagram 
