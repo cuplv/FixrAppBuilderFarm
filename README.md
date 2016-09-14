@@ -132,8 +132,79 @@ Default port is 8080.
 
 ### Fixr App Builder Service
 
-Dependencies: MongoDB 3.0.4, PyMongo 3.3.0, Redis 3.2.3, Python 2.7, redis-py 2.10.5, Java (>=8), Android SDKs/NDK (platform tools/tools and ALL sdks), 
-Gradle (primary 2.14.1, plus ALL other versions)
+Dependencies: MongoDB 3.0.4, PyMongo 3.3.0, Redis 3.2.3, Python 2.7, redis-py 2.10.5, Java (>=8), GitHub Repo Commandline tool and Search API Library,
+Android SDKs/NDK (platform tools/tools and ALL sdks), Gradle (primary 2.14.1, plus ALL other versions)
+
+- Install Redis and MongoDB dependencies, including Python libraries.
+- Install latest Gradle (https://gradle.org/gradle-download/)
+
+Remember to export the variable GRADLE_HOME pointing to the root of your Gradle path and add $GRADLE_HOME/bin to your PATH variable.
+
+The above are the easy bits. There's still a number of things you'll need to do, particularly the following:
+
+- Get and update Android SDKs and Android NDK
+- Get GitHub commandline tool and search API library
+- Get all versions of Gradle
+- Setup some environment variables
+
+Yes, that's a lot of things. One possibility is to follow the cookie crumbles found in this docker file (https://github.com/cuplv/FixrAppBuilder/blob/master/Dockerfile).
+It contains most of these steps, but you'll need to mod it a little to work as raw shell bashing (not just blind cut and paste, you lazy brat.. =P). Alternatively,
+try following the rest of the instructions.
+
+You'll need the GitHub command line tools and search API libraries. apt-get the command line tool:
+
+> sudo apt-get install git
+
+Next, you'll need the GitHub search API library and Python bindings:
+
+> wget https://github.com/libgit2/libgit2/archive/v0.24.0.tar.gz 
+> tar xzf v0.24.0.tar.gz
+> cd libgit2-0.24.0
+> cmake .
+> make 
+> sudo make install
+> pip install pygit2
+
+Wonderful, that's it for GitHub. Now lets deal with the Android stuff. Get Android SDK and NDK by doing the following:
+
+> wget http://dl.google.com/android/android-sdk_r24.4-linux.tgz
+> tar -xvzf android-sdk_r24.4-linux.tgz
+
+> wget https://dl.google.com/android/ndk/android-ndk-r9d-linux-x86_64.tar.bz2
+> tar -xvjf android-ndk-r9d-linux-x86_64.tar.bz2
+
+Take note of the root paths where you extracted these libraries to. You'll now need to export environment variables
+ANDROID_HOME and ANDROID_SDK_HOME to the SDKs path, and ANDROID_NDK_HOME to the NDK path. Additionally, add
+$ANDROID_SDK_HOME/tools , $ANDROID_SDK_HOME/platform-tools and $ANDROID_NDK_HOME to your PATH variable.
+
+Once this is done, you are almost there.. but not yet. You need to update your Android SDK now, particularly install all
+versions of the Android SDK and supporting libraries. Run the following commands:
+
+> android update sdk -u -a -t 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52
+> android update sdk -u -a -t 119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141
+> android update sdk -u -a -t 153,154,155,156,157,158,159,160,161,162,163,164,165,166
+
+One last step: you need to setup what's called the 'Local Gradle Farm'. Its our local repository of all
+gradle versions and essentially a local implementation of the Gradle wrapper.. why do we need this? Long
+story short, GitHub users are d*i*ks and many don't even check in their gradle wrappers, so to build their
+apps, we must implement the functionality of the Gradle wrapper. To set this up, first export variable
+GRADLE_FARM_HOME pointing to a designated path to hold all Gradle binary libraries. Next run the bash script
+'setup_gradle_farm.sh' found in this GitHub repo. This will download and copy all Gradle versions into the designated folder.
+You won't need to export $GRADLE_FARM_HOME to your PATH variable, but you'll need it for configuring
+app_builder.ini (see below).
+
+You probably now have the necessary libraries to run the app builder service. However, before you do, you need to
+check the configurations in app_builder.ini . Particularly, you need to point 'archivehost' and 'archivedir' to the
+right destination, where build outputs should be uploaded to. You'll need to ensure that your VM can 'scp' files
+to 'archivehost' (e.g., setup authorized key access). You will also need to set 'gradlefarmpath' to the folder
+designated to contain all gradle versions (i.e., GRADLE_FARM_HOME above). Additional to all these, be sure that
+redisOptions and dbOptions are set correctly: pointing to right instances of Redis and MongoDB, with the correct
+authentication data. To run an app builder instance, use the following command in a screen:
+
+> python builder_service.py -n (name_of_worker) -w (name_of_work_dir)
+
+Flags -n and -w are optional and will override inputs for 'name' and 'workdir' in category buildOptions of the app_builder.ini
+initialization file.
 
 ### .ini Configurations
 
