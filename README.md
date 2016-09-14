@@ -205,7 +205,7 @@ versions of the Android SDK and supporting libraries. Run the following commands
 
 One last step: you need to setup what's called the 'Local Gradle Farm'. Its our local repository of all
 gradle versions and essentially a local implementation of the Gradle wrapper.. why do we need this? Long
-story short, GitHub users are d*i*ks and many don't even check in their gradle wrappers, so to build their
+story short, GitHub users are gits (http://www.merriam-webster.com/dictionary/git) and many don't even check in their gradle wrappers, so to build their
 apps, we must implement the functionality of the Gradle wrapper. To set this up, first export variable
 GRADLE_FARM_HOME pointing to a designated path to hold all Gradle binary libraries. Next run the bash script
 'setup_gradle_farm.sh' found in this GitHub repo. This will download and copy all Gradle versions into the designated folder.
