@@ -43,11 +43,11 @@ def query_repo():
                 stats.append( stat )
     else:
         stats = []
-    skip  = request.args.get('skip')
-    skip  = int(skip) if skip != None else 0
-    limit = request.args.get('limit')
-    limit = int(limit) if limit != None else 0    
-    resp = get_repo_data( user, repo, hash_id, stats=stats, skip=skip, limit=limit, config=CONFIGS['db'] )
+    page  = request.args.get('page')
+    page  = int(page) if page != None else 0
+    per_page = request.args.get('per_page')
+    per_page = int(per_page) if per_page != None else 0    
+    resp = get_repo_data( user, repo, hash_id, stats=stats, page=page, per_page=per_page, config=CONFIGS['db'] )
     return jsonify( results=resp )
 
 @app.route("/builds/")

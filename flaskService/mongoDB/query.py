@@ -37,7 +37,7 @@ def preprocess_records(find_output):
     return response
 
 # Standard query for repository data
-def get_repo_data(user_name=None, repo_name=None, hash_id=None, stats=[], skip=0, limit=0, config=DEFAULT_DB_CONFIG):
+def get_repo_data(user_name=None, repo_name=None, hash_id=None, stats=[], page=0, per_page=0, config=DEFAULT_DB_CONFIG):
     app_builder_db = get_db(config=config)
     query = {}
     if user_name != None:
@@ -47,10 +47,10 @@ def get_repo_data(user_name=None, repo_name=None, hash_id=None, stats=[], skip=0
     if hash_id != None:
        query[HASH] = hash_id
     if len(stats) == 0:
-       return preprocess_records( app_builder_db[COLL_REPOS].find(query, skip=skip, limit=limit) )
+       return preprocess_records( app_builder_db[COLL_REPOS].find(query, skip=page*per_page, limit=per_page) )
     else:
        query['builds.0.stat'] = { '$in':stats }
-       return preprocess_records( app_builder_db[COLL_REPOS].find(query, skip=skip, limit=limit) )
+       return preprocess_records( app_builder_db[COLL_REPOS].find(query, skip=page*per_page, limit=per_page) )
        '''
        recs = []
        for rec in app_builder_db[COLL_REPOS].find(query, skip=skip, limit=limit):
