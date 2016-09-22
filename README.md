@@ -57,9 +57,15 @@ cluster, the Fixr App Builder is currently deployed as follows on the following 
 
 ## Querying the Farm
 
-More documentation for querying the farm will be added soon. But for now, try the following URL to poke at the query interface:
+More documentation for querying the farm will be added soon. But for now, try the following URL to poke at the query interface.
+
+To retrieve a summary of the overall build results:
 
 > http://192.12.242.242:8080/count/all/
+
+To retrieve a pagination of passed (stats=ps) builds, starting from page 0 with 20 entries a page:
+
+> http://192.12.242.242:8080/repo/?stats=ps&page=0&per_page=20
 
 We need everyone's feedback on what kind of query interfaces are required for app building integration with your 
 respective Fixr tools. Please feel free to submit requests/demands to edmund.lam@colorado.edu ! 
