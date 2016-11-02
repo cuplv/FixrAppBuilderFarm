@@ -14,13 +14,14 @@ from config import get_configs, default_configs, load_configs, DEFAULT_QSERVE_CO
 
 from build_logging import setup_logging
 
-app = Flask(__name__)
+ini_file_path = '/eval/FixrAppBuilderFarm/flaskService/app_builder.ini'
+# CONFIGS = load_configs_with_cmd_line_overrides() # load_configs( ini_file_path )
 
-ini_file_path = 'app_builder.ini'
-CONFIGS = load_configs_with_cmd_line_overrides() # load_configs( ini_file_path )
+app = Flask(__name__)
 
 @app.route("/repo/")
 def query_repo():
+    CONFIGS = load_configs(ini_file_path)
     user = request.args.get('user')
     repo = request.args.get('repo')
     hash_id = request.args.get('hash')
@@ -52,6 +53,7 @@ def query_repo():
 
 @app.route("/builds/")
 def query_builds_with_fixes():
+    CONFIGS = load_configs(ini_file_path)
     user = request.args.get('user')
     repo = request.args.get('repo')
     hash_id = request.args.get('hash')
@@ -68,34 +70,40 @@ def query_builds_with_fixes():
     
 @app.route("/top/")
 def query_top_builable():
+    CONFIGS = load_configs(ini_file_path)
     n = int( request.args.get('n') )
     resp = get_top_N_buildable_repo_data( n=n, config=CONFIGS['db'] )
     return jsonify( result=resp )
 
 @app.route("/id/")
 def query_id():
+    CONFIGS = load_configs(ini_file_path)
     oid = request.args.get('id')
     resp = get_repo_data_by_ids([oid], config=CONFIGS['db'])
     return jsonify( result=resp )
 
 @app.route("/ids/")
 def query_ids():
+    CONFIGS = load_configs(ini_file_path)
     oids = request.args.get('ids')
     resp = get_repo_data_by_ids(oids.split(','), config=CONFIGS['db'])
     return jsonify( result=resp )
 
 @app.route("/count/commit/builds/")
 def query_count_commit_builds():
+    CONFIGS = load_configs(ini_file_path)
     count = count_totals( TOTAL_COMMIT_BUILDS, config=CONFIGS['db'] )
     return jsonify( total=count )
 
 @app.route("/count/repo/builds/")
 def query_count_repo_builds():
+    CONFIGS = load_configs(ini_file_path)
     count = count_totals( TOTAL_REPO_BUILDS, config=CONFIGS['db'] )
     return jsonify( total=count )
 
 @app.route("/count/all/")
 def query_count_alls():
+    CONFIGS = load_configs(ini_file_path)
     counts = count_all_totals( config=CONFIGS['db'] )
     jobs_left = num_of_jobs(config=CONFIGS['redis'])
     counts['in_queue'] = jobs_left 

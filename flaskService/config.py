@@ -76,9 +76,9 @@ def get_configs(ini_file):
 
 def load_configs(ini_file_path):
     if path.exists(ini_file_path):
-        return get_configs(ini_file_path)
+       return get_configs(ini_file_path)
     else:
-        return default_configs()
+       return default_configs()
 
 def load_configs_with_cmd_line_overrides():
     p = optparse.OptionParser()
