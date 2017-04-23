@@ -14,6 +14,7 @@ LOG_OPTS = 'logOptions'
 
 FILE_LOGGING = 'file'
 GRAY_LOGGING = 'graylog'
+NO_LOGGING = 'nolog'
 
 DEFAULT_QSERVE_CONFIG = { 'host':'0.0.0.0' , 'port':6060, 'name':'query1' }
 DEFAULT_BUILDER_CONFIG = { 'workdir':'work', 'storeidx':0, 'archivehost':None, 'archivedir':'/data', 'name':'builder1'
@@ -68,7 +69,7 @@ def get_configs(ini_file):
                 log_config[log_opt] = GRAY_LOGGING
             else:
                 # print "file logging"
-                log_config[log_opt] = FILE_LOGGING
+                log_config[log_opt] = NO_LOGGING
                 
     return { 'db':db_config, 'redis':rd_config, 'qserve':qs_config, 'build':bd_config, 'log':log_config }
 
